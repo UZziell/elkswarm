@@ -99,7 +99,7 @@ f; curl -s -XPOST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PA
         "siem"
     ],
     "id": "customspace",
-    "imageUr1": ",
+    "imageUrl": "",
     "initials": "c",
     "name": "CustomSpace"
 }'
