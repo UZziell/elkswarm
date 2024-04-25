@@ -1,0 +1,39 @@
+services:
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - ./elasticsearch/certs:/usr/share/elasticsearch/config/certs
+      - ./elasticsearch/instances.yml.tmpl:/usr/share/elasticsearch/config/instances.yml.tmpl:ro
+    user: "0"
+    environment:
+      KIBANA_NODES_IP_LIST: ${KIBANA_NODES_IP_LIST}
+    command: >
+      bash -c
+      "
+        if [ ! -f config/certs/ca.zip ]; then
+          echo \"Creating CA\";
+          bin/elasticsearch-certutil ca --days 3650 --silent --pem -out config/certs/ca.zip;
+          unzip -n config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo \"Creating certs\";
+          cp config/instances.yml.tmpl config/instances.yml && sed -i \"s/__KIBANA_NODES IP__/$${KIBANA_NODES_IP_LIST}/\" config/instances.yml;
+          bin/elasticsearch-certutil cert --days 365@ --silent --pem -out config/certs/certs.zip --in config/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip -n config/certs/certs.zip -d config/certs;
+          
+          echo \"Elasticsearch certificates generated!\";
+        fi;
+
+        echo \"Setting file permissions\";
+        chown -R root:root config/certs;
+        find . -type d | xargs chmod 750;
+        find . -type f | xargs chmod 640;
+
+
+        ‘if [ ! -f config/certs/ca/ca.p12 ]; then
+          export CERTIFICATE_PASSWORD=$$(openssl rand -hex 7)
+          openssl pkcs12 -export -in config/certs/ca/ca.crt -inkey config/certs/ca/ca.key -out config/cer
+          echo \"Exported CA x5@9 certificate to PKCS12 Certificate. Stored in certs/ca/ca.p12. Use the -
+          echo \"keytool -importkeystore -srckeystore elasticsearch/certs/ca/ca.p12 -srcstoretype PKCS12 -srcstorepass $${CERTIFICATE_PASSWORD} -deststorepass $${CERTIFICATE_PASSWORD} -destkeypass $${CERTIFICATE_PASSWORD} -destkeystore elasticsearch/certs/ca/ca.jks\";
+        fi
+      "

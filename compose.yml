@@ -1,0 +1,539 @@
+services:
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    entrypoint: ["./setup_script.sh"]
+    user: "0"
+    deploy:
+      placement:
+        constraints:
+        - "node.labels.name==nodel"
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+    volumes:
+      - ./elasticsearch/certs:/usr/share/elasticsearch/config/certs
+    configs:
+      - source: elastic_initial_setup_script.sh
+        target: /usr/share/elasticsearch/setup_script.sh
+        mode: 0540
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      USERS_DEFAULT_PASSWORD: ${USERS_DEFAULT_PASSWORD}
+      LOGSTASH_WRITER_USER: ${LOGSTASH_WRITER_USER}
+      LOGSTASH_WRITER_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+      LOGSTASH_SYSTEM_PASSWORD: ${LOGSTASH_SYSTEM_PASSWORD}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      APM_SYSTEM_PASSWORD: ${APM_SYSTEM_PASSWORD}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD}
+      REMOTE_MONITORING_USER_PASSWORD: ${REMOTE_MONITORING_USER_PASSWORD}
+      KIBANA_NODE_IP: ${KIBANA_NODE_IP}
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      elastic:
+      
+  es01: &es_service
+    depends_on:
+      - setup
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    user: ${RUN_AS_USER}
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.name==nodel"
+      # resources:
+      # limits:
+      # memory: ${MEMORY_LIMIT}
+      # endpoint_mode: dnsrr
+    ports:
+      - target: 9200
+        published: 9200
+        mode: host
+    volumes:
+      - ${DATA_DIR}/elasticsearch/data:/app/elasticsearch/data
+      # - ${DATA_DIR}/logs/elasticsearch: /app/logs/elasticsearch
+      - snapshot-nfs:/app/elasticsearch/snapshot
+    secrets:
+      - source: ca_crt
+        target: /usr/share/elasticsearch/config/certs/ca.crt
+        mode: 0640
+        uid: ${RUN_AS_USER}
+      - source: es01_crt
+        target: /usr/share/elasticsearch/config/certs/es.crt
+        mode: 0640
+        uid: ${RUN_AS_USER}
+      - source: es01_key
+        target: /usr/share/elasticsearch/config/certs/es.key
+        mode: 0640
+        uid: ${RUN_AS_USER}
+    configs:
+      - source: jvm_options
+        target: /usr/share/elasticsearch/config/jvm.options.d/heapsize.options
+        mode: 0440
+    env_file: es_env
+    environment:
+      - node.name=es01
+      - node.roles=${ELASTIC_MASTER_ROLES}
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - JVM_HEAP_SIZE=${ELASTIC_JVM_HEAP_SIZE}
+      # mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+    networks:
+      elastic:
+        aliases:
+          - nodel
+
+  es02:
+    <<: *es_service
+    depends_on:
+      - es01
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.name==node2"
+    secrets:
+      - source: ca_crt
+        target: /usr/share/elasticsearch/config/certs/ca.crt
+        mode: 0640
+      - source: es02_crt
+        target: /usr/share/elasticsearch/config/certs/es.crt
+        mode: 0640
+      - source: es02_key
+        target: /usr/share/elasticsearch/config/certs/es.key
+        mode: 0640
+    env_file: es_env
+    environment:
+      - node.name=es02
+      - node.roles=${ELASTIC_MASTER_ROLES}
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - JVM_HEAP_SIZE=S${ELASTIC_JVM_HEAP_SIZE}
+    networks:
+      elastic:
+        aliases:
+          - node2
+
+  es03:
+    <<: *es_service
+    depends_on:
+      - es02
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.name==node3"
+    secrets:
+      - source: ca_crt
+        target: /usr/share/elasticsearch/config/certs/ca.crt
+        mode: 0640
+      - source: es03_crt
+        target: /usr/share/elasticsearch/config/certs/es.crt
+        mode: 0640
+      - source: es03_key
+        target: /usr/share/elasticsearch/config/certs/es.key
+        mode: 0640
+    env_file: es_env
+    environment:
+      - node.name=es03
+      - node.roles=${ELASTIC_MASTER_ROLES}
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - JVM_HEAP_SIZE=${ELASTIC_JVM_HEAP_SIZE}
+    networks:
+      elastic:
+        aliases:
+          - node3
+  kibana:
+    depends_on:
+      - es01
+      - es02
+      - es03
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    user: ${RUN_AS_USER}
+    hostname: "kibana{{.Task.Slot}}"
+    deploy:
+      replicas: ${KIBANA_REPLICAS:-2}
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.role==manager"
+          #- "node.labels.name==nodel"
+      update_config:
+        parallelism: 1
+        monitor: 60s
+        delay: 20s
+    volumes:
+      - ${DATA_DIR}/kibana/data:/usr/share/kibana/data
+      ##- ${DATA_DIR}/logs/kibana: /app/logs/kibana
+    secrets:
+      - source: ca_crt
+        target: /usr/share/kibana/config/certs/ca.crt
+        mode: 0640
+        uid: ${RUN_AS_USER}
+      - source: kibana_crt
+        target: /usr/share/kibana/config/certs/kibana.crt
+        mode: 0640
+        uid: ${RUN_AS_USER}
+      - source: kibana_key
+        target: /usr/share/kibana/config/certs/kibana.key
+        mode: 0640
+        uid: ${RUN_AS_USER}
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      SERVER_NAME: "kibana-{{.Node.Hostname}}"
+      ELASTICSEARCH_HOSTS: ${ELASTIC_HOSTS_LIST}
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certs/ca.crt
+      # SSL
+      SERVER_SSL_ENABLED: 'true'
+      SERVER_SSL_CERTIFICATE: /usr/share/kibana/config/certs/kibana.crt
+      SERVER_SSL_KEY: /usr/share/kibana/config/certs/kibana.key
+      XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_ENCRYPTIONKEY}
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY}
+      XPACK_SECURITY_SESSION_IDLETIMEOUT: 7d #60m
+      # monitoring
+      # set to 'false' to disable self monitoring if already monitoring with metricbeat
+      MONITORING_KIBANA_COLLECTION_ENABLED: 'false'
+      MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED: 'true'
+      MONITORING_UI_CONTAINER_LOGSTASH_ENABLED: 'true'
+      SERVER_PUBLICBASEURL: https://${KIBANA_NODE_IP}:${KIBANA_PORT}
+      # disable telemetry (elastic user data collection)
+      TELEMETRY_OPTIN: "false"
+      MAP_INCLUDEELASTICMAPSSERVICE: "false"
+      NEWSFEED_ENABLED: "false"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -qE 'HTTP/1.1 302 Found|200 OK' || curl --cacert config/certs/ca.crt -s -I https://localhost:5601 | grep -qE 'HTTP/1.1 302 Found|200 OK'"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    networks:
+      elastic:
+        aliases:
+          - "kibana{{.Task.Slot}}"
+
+  logstash:
+    depends_on:
+      - es01
+      - es02
+      - es03
+      - kibana
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
+    user: ${RUN_AS_USER}
+    hostname: "{{.Node.Hostname}}"
+    deploy:
+      replicas: ${LOGSTASH_REPLICAS:-3}
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.role==manager"
+        #- "node.labels.name==nodel"
+      update_config:
+        parallelism: 1
+        monitor: 60s
+        delay: 20s
+    ports:
+      - target: 9600
+        published: 9600
+        mode: host
+      - 7000:7000
+      - 7001:7001
+      - 7002:7002
+    secrets:
+      - source: ca_crt
+        target: /usr/share/logstash/config/certs/ca.crt
+        mode: 0644
+    configs:
+      - source: jvm_options
+        target: /usr/share/logstash/config/jvm.options.d/heap_size.options
+        mode: 0664
+      # - source: pipelines.yml
+      #   target: /usr/share/logstash/config/pipelines.yml
+      #   mode: 0444
+      #   uid: ${RUN_AS_USER}
+    volumes:
+      - ${ELK_DIR}/logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ${ELK_DIR}/logstash/conf.d.tmpl:/usr/share/logstash/config/conf.d
+      # fixes permission denied when running as a user other than 1000
+      - ${ELK_DIR}/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:rw
+      - ${DATA_DIR}/logstash:/app/logstash
+      # - ${DATA_DIR}/logs/logstash:/app/logs/logstash
+    environment:
+      node.name: "{{.Node.Hostname}}"
+      path.data: /app/logstash
+      #path.logs: /app/logs/logstash
+      http.host: 0.0.0.0
+      xpack.monitoring.enabled: 'true'
+      xpack.monitoring.elasticsearch.username: logstash_system
+      xpack.monitoring.elasticsearch.password: ${LOGSTASH_SYSTEM_PASSWORD}
+      xpack.monitoring.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/certs/ca.crt
+      xpack.monitoring.elasticsearch.hosts: ${ELASTIC_HOSTS_LIST}
+      LS_JAVA_OPTS: "-Xms${LOGSTASH_JVM_HEAP_SIZE} -Xmx${LOGSTASH_JVM_HEAP_SIZE}"
+      JVM_HEAP_SIZE: ${LOGSTASH_JVM_HEAPSIZE}
+      LOGSTASH_WRITER_USER: ${LOGSTASH_WRITER_USER}
+      LOGSTASH_WRITER_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+      ELASTIC_HOSTS: "https://es01:9200 https://es02:9200 https://es03:9200"
+    healthcheck:
+      test:
+        [ "CMD-SHELL",
+          "curl -s http://127.0.0.1:9600 | grep -q version",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    networks:
+      - elastic
+
+  metricbeat-performance:
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    user: ${RUN_AS_USER}
+    hostname: "{{.Node.Hostname}}"
+    deploy:
+      mode: global
+      update_config:
+        parallelism: 1
+        monitor: 30s
+        delay: 20s
+    cap_add:
+      - dac_read_search
+      ## - sys_ptrace
+      ## - net_admin
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:iro"
+      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+      - ${DATA_DIR}/metricbeat/data:/usr/share/metricbeat/data
+      #- ./metrickeat/metrickeat-performance.yml:/usxr/share/metrickeat/metrichbeat.yml: ro
+    secrets:
+      - source: ca_crt
+        target: /usr/share/metricbeat/ca.crt
+        mode: 0444
+    configs:
+      - source: metricbeat-performance.yml
+        target: /usr/share/metricbeat/metricbeat.yml
+        mode: 0444
+    environment:
+      ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
+      BEATS_SYSTEM_USERNAME: ${LOGSTASH_WRITER_USER}
+      BEATS_SYSTEM_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "1"
+    networks:
+      - elastic
+
+  metricbeat-monitoring:
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    user: ${RUN_AS_USER}
+    hostname: "{{.Node.Hostname}}"
+    deploy:
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.role==manager"
+      update_config:
+        parallelism: 1
+        monitor: 60s
+        delay: 20s
+    secrets:
+      - source: ca_crt
+        target: /usr/share/metricbeat/ca.crt
+        mode: 0440
+    configs:
+      - source: metricbeat-monitoring.yml
+        target: /usr/share/metricbeat/metricbeat.yml
+        mode: 0444
+    environment:
+      ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
+      LOGSTASH_HOSTS_LIST: ${LOGSTASH_HOSTS_LIST}
+      REMOTE_MONITORING_USER: remote_monitoring_user
+      REMOTE_MONITORING_USER_PASSWORD: ${REMOTE_MONITORING_USER_PASSWORD}
+      BEATS_SYSTEM_USERNAME: ${LOGSTASH_WRITER_USER}
+      BEATS_SYSTEM_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "1"
+    networks:
+      - elastic
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    #user: "${RUN_AS_USER}"
+    user: root
+    hostname: "{{.Node.Hostname}}"
+    deploy:
+      replicas: ${FILEBEAT_REPLICAS:-3}
+      placement:
+          max_replicas_per_node: 1
+          constraints:
+            - "node.role==manager"
+    volumes:
+      - ${ALTERNATIVE_DOCKER_ROOT_DIR:-/var/lib/docker}/containers/:/var/lib/docker/containers/:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DATA_DIR}/filebeat/data:/usr/share/filebeat/data
+    secrets:
+      - source: ca_crt
+        target: /usr/share/filebeat/ca.crt
+        mode: 0440
+    configs:
+      - source: filebeat.yml
+        target: /usr/share/filebeat/filebeat.yml
+        mode: 0444
+    environment:
+      ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
+      BEATS_SYSTEM_USERNAME: ${LOGSTASH_WRITER_USER}
+      BEATS_SYSTEM_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "1"
+    networks:
+      - elastic
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
+    deploy:
+      replicas: ${APM_SERVER_REPLICAS:-1}
+      placement:
+        constraints:
+          - "node.labels.name==node1"
+    configs:
+      - source: apm-server.yml
+        target: /ysr/share/apm-server/apm-server.yml
+        mode: 0644
+    secrets:
+      - source: ca_crt
+        target: /usr/share/apm-server/config/certs/ca.crt
+        mode: 0440
+      - source: apm_crt
+        target: /usr/share/apm-server/config/certs/apm-server.crt
+        mode: 0440
+      - source: apm_key
+        target: /ysr/share/apm-server/config/certs/apm-server.key
+        mode: 0440
+    environment:
+      ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    ports:
+      - 8200:8200
+    healthcheck:
+      test:
+        [ "CMD-SHELL",
+          "curl -s http://127.0.0.1:8200 | grep -q version",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+    networks:
+      - elastic   
+
+configs:
+  jvm_options:
+    file: ./elasticsearch/config/jvm.options.tmpl
+    template_driver: golang
+  metricbeat-performance.yml:
+    file: ./metricbeat/metricbeat-performance.yml
+    template_driver: golang
+  metricbeat-monitoring.yml:
+    file: ./metricbeat/metricbeat-monitoring.yml
+    template_driver: golang
+  filebeat.yml:
+    file: ./filebeat/filebeat-stack.yml
+    template_driver: golang
+  apm-server.yml:
+    file: ./apm/apm-server.yml
+    template_driver: golang
+  elastic_initial_setup_script.sh:
+    file: ./elasticsearch/elastic_initial_setup_script.sh
+    template_driver: golang
+  kafka-jaas.conf:
+    file: ./logstash/kafka-jaas.tonf
+    template_driver: golang
+
+
+secrets:
+  ca_crt:
+   file: ./elasticsearch/certs/ca/ca.crt
+  ca_key:
+    file: ./elasticsearch/certs/ca/ca.key
+  es01_crt:
+    file: ./elasticsearch/certs/es01/es01.crt
+  es01_key:
+    file: ./elasticsearch/certs/es01/es01.key
+  es02_crt:
+    file: ./elasticsearch/certs/es02/es02.crt
+  es02_key:
+    file: ./elasticsearch/certs/es02/es02.key
+  es03_crt:
+    file: ./elasticsearch/certs/es03/es03.crt
+  es03_key:
+    file: ./elasticsearch/certs/es03/es03.key
+  kibana_crt:
+    file: ./elasticsearch/certs/kibana/kibana.crt
+  kibana_key:
+    file: ./elasticsearch/certs/kibana/kibana.key
+  apm_crt:
+    file: ./felasticsearch/certs/apm-server/apm-server.crt
+  apm_key:
+    file: ./elasticsearch/certs/apm-server/apm-server.key
+
+networks:
+  elastic:
+    driver: overlay
+    attachable: true
+  host-net:
+    name: host
+    external: true
+
+volumes:
+  snapshot-nfs:
+    driver_opts:
+      type: "nfs"
+      o: “addr=${NFS_SERVER_IP},hfsvers=4,nolock, hard, rw"
+      device: ":${DATA_DIR}/elasticsearch/snapshot"

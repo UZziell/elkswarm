@@ -1,0 +1,49 @@
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu
+    - load
+    - memory
+    - network
+    - uptime
+    - filesystem
+    - diskio
+    - fsstat
+    #- service
+  enabled: true
+  period: 60s
+  #processes: ['.*"]
+  cpu.metrics: ["percentages", "normalized_percentages"]
+  core.metrics: ["percentages"]
+  filesystem.ignore_types: [nsfs, sysfs, tmpfs, bdev, proc, cgroup, cgroup2, cpuset, devtmpfs, configfs, debugfs, tracefs, securityfs, sockfs, bpf, pipefs, ramfs, hugetlbfs, devpts, ecryptfs, fuse, fusectl, mqueue, pstore, autofs, binfmt_misc, overlay, autofs, aufs]
+
+- module: linux
+  metricsets:
+    - iostat
+
+output.elasticsearch:
+  hosts: {{ env "ELASTIC_HOSTS_LIST" }}
+  protocol: https
+  username: "{{ env "BEATS_SYSTEM_USERNAME" }}" 1
+  password: "{{ env "BEATS_SYSTEM_PASSWORD" }}"
+  ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
+  index: "metricbeat-sysperformance"
+
+setup.template:
+  #enabled: true
+  #overwrite: true
+  name: "metricbeat-sysperformance"
+  pattern: "metricbeat-sysperformance"
+
+#setup.ilm.enabled: true
+#setup.ilm.overwrite: true
+
+# load dashboards
+##setup.kibana:
+## host: "https://kibana:5601" '
+## protocol: https
+## ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
+## username:
+## password:
+##setup.dashboards.enabled: true
+ 

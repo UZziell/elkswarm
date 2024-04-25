@@ -1,0 +1,5 @@
+logstash/conf.d
+elasticsearch/certs
+*.pem
+**/*tar
+**/*tar.gz

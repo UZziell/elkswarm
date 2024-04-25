@@ -1,0 +1,43 @@
+providers:
+  - type: docker
+    templates:
+    - condition:
+        contains:
+          docker.container.image: elasticsearch/elasticsearch
+      config:
+        - module: elasticsearch
+          server:
+            input:
+              type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              fields_under_root: true
+    - condition:
+        contains:
+          docker.container.image: logstash/logstash
+      config:
+        - module: logstash
+          log:
+            input:
+              type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              fields_under_root: true
+    - condition:
+        contains:
+          docker.container.image: kibana/kibana
+      config:
+        - module: kibana
+          log:
+            input:
+              type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              fields_under_root: true
+
+output.elasticsearch:
+  hosts: {{ env "ELASTIC_HOSTS_LIST" }}
+  protocol: https
+  username: "{{ env "BEATS_SYSTEM_USERNAME" }}"
+  password: "{{ env "BEATS_SYSTEM_PASSWORD" }}"
+  ssl.certificate_authorities: "/usr/share/filebeat/ca.crt"

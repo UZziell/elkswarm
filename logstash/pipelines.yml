@@ -1,0 +1,9 @@
+# For more information on multiple pipelines, see the documentation:
+# https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
+
+- pipeline.id: pipeline-1
+  path.config: "/usr/share/logstash/config/conf.d/pipeline-1-*.conf"
+
+- pipeline.id: pipeline-2
+  path.config: "/usr/share/logstash/config/conf.d/pipeline-2-*.conf"
+  pipeline.ecs_compatibility: disabled

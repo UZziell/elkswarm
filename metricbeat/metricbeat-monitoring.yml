@@ -1,0 +1,40 @@
+metricbeat.modules:
+- module: system
+  enabled: false
+
+- module: elasticsearch
+  hosts: ["https://es01:9260", "https://ese2:9260", "https://es03:9200", "https://ese4:9200", "https://es05:9260", "https://es06:9200", "https://es07:9200", "https://es08:9200", "https://es09:9200", "https://es10:9200", "https://es11:9200", "https://es12:9200" ]
+  xpack.enabled: true
+  period: 10s
+  scope: node
+  username: "{{ env "REMOTE_MONITORING_USER" }}"
+  password: "{{ env "REMOTE_MONITORING_USER_PASSWORD" }}"
+  ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
+
+- module: logstash
+  metricsets: 
+    - node
+    - node_stats
+  hosts: {{ env "LOGSTASH_HOSTS_LIST" }}
+  xpack.enabled: true
+  period: 10s
+  scope: node
+  username: "{{ env "REMOTE_MONITORING_USER" }}"
+  password: "{{ env "REMOTE_MONITORING_USER_PASSWORD" }}"
+
+- module: kibana
+  hosts: ["https://kibana1:5601","https://kibana2:5601"]
+  xpack.enabled: true
+  period: 10s
+  scope: node
+  username: "{{ env "REMOTE_MONITORING_USER" }}"
+  password: "{{ env "REMOTE_MONITORING_USER_PASSWORD" }}"
+  ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
+  ssl.verification_mode: none
+
+output.elasticsearch:
+  hosts: {{ env "ELASTIC_HOSTS_LIST" }}
+  protocol: https
+  username: "{{ env "BEATS_SYSTEM_USERNAME" }}"
+  password: "{{ env "BEATS_SYSTEM_PASSWORD" }}"
+  ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
