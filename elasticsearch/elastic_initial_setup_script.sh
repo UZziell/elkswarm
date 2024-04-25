@@ -86,7 +86,7 @@ f; curl -s -XPOST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PA
 ##########
 # spaces #
 ##########
-f; curl -s -XPOST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PASSWORD" }}" "https://kibana:5601/api/spaces/space' -H 'Content-Type: application/json' -H 'kbn-xsrf: reporting' -d'
+f; curl -s -XPOST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PASSWORD" }}" "https://kibana:5601/api/spaces/space" -H 'Content-Type: application/json' -H 'kbn-xsrf: reporting' -d'
 {
     "color": "#860000",
     "description": "CustomSpace",
@@ -100,6 +100,6 @@ f; curl -s -XPOST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PA
     ],
     "id": "customspace",
     "imageUrl": "",
-    "initials": "c",
+    "initials": "C",
     "name": "CustomSpace"
 }'
