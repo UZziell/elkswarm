@@ -6,7 +6,7 @@ services:
     deploy:
       placement:
         constraints:
-        - "node.labels.name==nodel"
+        - "node.labels.name==node1"
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -43,7 +43,7 @@ services:
     deploy:
       placement:
         constraints:
-          - "node.labels.name==nodel"
+          - "node.labels.name==node1"
       # resources:
       # limits:
       # memory: ${MEMORY_LIMIT}
@@ -103,7 +103,7 @@ services:
     networks:
       elastic:
         aliases:
-          - nodel
+          - node1
 
   es02:
     <<: *es_service
@@ -180,7 +180,7 @@ services:
         max_replicas_per_node: 1
         constraints:
           - "node.role==manager"
-          #- "node.labels.name==nodel"
+          #- "node.labels.name==node1"
       update_config:
         parallelism: 1
         monitor: 60s
@@ -260,7 +260,7 @@ services:
         max_replicas_per_node: 1
         constraints:
           - "node.role==manager"
-        #- "node.labels.name==nodel"
+        #- "node.labels.name==node1"
       update_config:
         parallelism: 1
         monitor: 60s
@@ -535,5 +535,5 @@ volumes:
   snapshot-nfs:
     driver_opts:
       type: "nfs"
-      o: “addr=${NFS_SERVER_IP},nfsvers=4,nolock,hard,rw"
+      o: "addr=${NFS_SERVER_IP},nfsvers=4,nolock,hard,rw"
       device: ":${DATA_DIR}/elasticsearch/snapshot"
