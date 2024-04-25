@@ -15,7 +15,7 @@ function create_common() {
     if [ x{{ env "ELASTIC_PASSWORD" }} == x ]; then
         echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
         exit 1;
-    elif [ x{{ env "LOGSTASH_WRITER_PASSWORD" }} == x ] || [ x{{ env "APM_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "BEATS_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "KIBANA_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "LOGSTASH_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "REMOTE_MONITORING_USER PASSWORD" }} == x ]; then
+    elif [ x{{ env "LOGSTASH_WRITER_PASSWORD" }} == x ] || [ x{{ env "APM_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "BEATS_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "KIBANA_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "LOGSTASH_SYSTEM_PASSWORD" }} == x ] || [ x{{ env "REMOTE_MONITORING_USER_PASSWORD" }} == x ]; then
         echo "One of the LOGSTASH_WRITER_PASSWORD, APM_SYSTEM_PASSWORD, LOGSTASH_SYSTEM_PASSWORD, REMOTE_MONITORING_USER_PASSWORD environment variables is not set in the .env file"
         exit 1;
     fi;
