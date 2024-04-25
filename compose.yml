@@ -130,7 +130,7 @@ services:
       - cluster.name=${CLUSTER_NAME}
       - cluster.initial_master_nodes=es01
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - JVM_HEAP_SIZE=S${ELASTIC_JVM_HEAP_SIZE}
+      - JVM_HEAP_SIZE=${ELASTIC_JVM_HEAP_SIZE}
     networks:
       elastic:
         aliases:
@@ -475,7 +475,7 @@ services:
 
 configs:
   jvm_options:
-    file: ./elasticsearch/config/jvm.options.tmpl
+    file: ./elasticsearch/jvm.options.tmpl
     template_driver: golang
   metricbeat-performance.yml:
     file: ./metricbeat/metricbeat-performance.yml
@@ -493,7 +493,7 @@ configs:
     file: ./elasticsearch/elastic_initial_setup_script.sh
     template_driver: golang
   kafka-jaas.conf:
-    file: ./logstash/kafka-jaas.tonf
+    file: ./logstash/kafka-jaas.conf
     template_driver: golang
 
 
@@ -535,5 +535,5 @@ volumes:
   snapshot-nfs:
     driver_opts:
       type: "nfs"
-      o: “addr=${NFS_SERVER_IP},hfsvers=4,nolock, hard, rw"
+      o: “addr=${NFS_SERVER_IP},nfsvers=4,nolock,hard,rw"
       device: ":${DATA_DIR}/elasticsearch/snapshot"
