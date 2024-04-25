@@ -1,13 +1,12 @@
 path.data=/app/elasticsearch/data
 path.repo=/app/elasticsearch/snapshot
-path.logs=/app/logs/elasticsearch
 discovery.seed_hosts=es01,es02,es03
 network.host=0.0.0.0
 bootstrap.memory_lock=true
 xpack.security.enabled=true
 xpack.security.http.ssl.enabled=true
 xpack.security.http.ssl.key=certs/es.key
-xpack.security.http.ssl.certificate=certs/es.crt,
+xpack.security.http.ssl.certificate=certs/es.crt
 xpack.security.http.ssl.certificate_authorities=certs/ca.crt
 xpack.security.transport.ssl.enabled=true
 xpack.security.transport.ssl.key=certs/es.key
