@@ -285,10 +285,10 @@ services:
       #   mode: 0444
       #   uid: ${RUN_AS_USER}
     volumes:
-      - ${ELK_DIR}/logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
-      - ${ELK_DIR}/logstash/conf.d.tmpl:/usr/share/logstash/config/conf.d
+      - ./logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/conf.d.tmpl:/usr/share/logstash/config/conf.d
       # fixes permission denied when running as a user other than 1000
-      - ${ELK_DIR}/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:rw
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:rw
       - ${DATA_DIR}/logstash:/app/logstash
       # - ${DATA_DIR}/logs/logstash:/app/logs/logstash
     environment:
