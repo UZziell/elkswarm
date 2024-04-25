@@ -3,7 +3,7 @@ metricbeat.modules:
   enabled: false
 
 - module: elasticsearch
-  hosts: ["https://es01:9260", "https://ese2:9260", "https://es03:9200", "https://ese4:9200", "https://es05:9260", "https://es06:9200", "https://es07:9200", "https://es08:9200", "https://es09:9200", "https://es10:9200", "https://es11:9200", "https://es12:9200" ]
+  hosts: ["https://es01:9260", "https://es02:9260", "https://es03:9200", "https://es04:9200", "https://es05:9260", "https://es06:9200", "https://es07:9200", "https://es08:9200", "https://es09:9200", "https://es10:9200", "https://es11:9200", "https://es12:9200" ]
   xpack.enabled: true
   period: 10s
   scope: node
