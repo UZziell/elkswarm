@@ -56,8 +56,8 @@ chmod 666 "${ELK_DIR}"/logstash/logstash.yml; \
 chmod 744 "${ELK_DIR}"/elasticsearch/elastic_initial_setup_script.sh; \
 find "${DATA_DIR}"/elasticsearch/data/ -type d | xargs chmod 775; \
 find "${DATA_DIR}"/elasticsearch/data/ -type f | xargs chmod 664; \
-find "${ELK_DIR}" -type d | xargs -L1 chmod 775; \
-find "${ELK_DIR}" -type f | xargs -L1 chmod 664;
+find "${ELK_DIR}" -type d | xargs chmod 775; \
+find "${ELK_DIR}" -type f | xargs chmod 664;
 
 # Tune kernel
 grep -q 'vm.max_map_count=262144' /etc/sysctl.conf || echo 'vm.max_map_count=262144' >> /etc/sysctl.conf && sysctl --load /etc/sysctl.conf;
@@ -95,3 +95,6 @@ docker compose --env-file .env -f generate-certs-compose.yml up
 
 # deploy stack
 docker stack deploy --resolve-image never -c compose.yml elk
+
+# for debug only
+# rm -rf /app/{elasticsearch,logstash,kibana,metricbeat,filebeat}/data/*
