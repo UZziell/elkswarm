@@ -54,7 +54,7 @@ services:
         mode: host
     volumes:
       - ${DATA_DIR}/elasticsearch/data:/app/elasticsearch/data
-      # - ${DATA_DIR}/logs/elasticsearch: /app/logs/elasticsearch
+      # - ${DATA_DIR}/logs/elasticsearch:/app/logs/elasticsearch
       - snapshot-nfs:/app/elasticsearch/snapshot
     secrets:
       - source: ca_crt
@@ -187,7 +187,7 @@ services:
         delay: 20s
     volumes:
       - ${DATA_DIR}/kibana/data:/usr/share/kibana/data
-      ##- ${DATA_DIR}/logs/kibana: /app/logs/kibana
+      # - ${DATA_DIR}/logs/kibana:/app/logs/kibana
     secrets:
       - source: ca_crt
         target: /usr/share/kibana/config/certs/ca.crt
