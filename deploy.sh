@@ -51,7 +51,7 @@ for IMAGE in "${ELK_DIR}"/*.tar; do sudo docker image load -i "${IMAGE};"; done
 mkdir -p "${DATA_DIR}"/logs/{elasticsearch,logstash,kibana} "${DATA_DIR}"/{elasticsearch/{data,snapshot},kibana/data,logstash/data,filebeat/data,metricbeat/data} ${ELK_DIR} && \
 chown -R 1000:docker "${ELK_DIR}" "${DATA_DIR}"/{elasticsearch,logstash,logs,kibana,filebeat} && \
 chmod 775 "${DATA_DIR}" && \
-chmod 777 "${DATA_DIR}"/{elasticsearch,kibana}/data/; \
+chmod 777 "${DATA_DIR}"/{elasticsearch,kibana,metricbeat,logstash}/data/; \
 chmod 666 "${ELK_DIR}"/logstash/logstash.yml; \
 chmod 744 "${ELK_DIR}"/elasticsearch/elastic_initial_setup_script.sh; \
 find "${DATA_DIR}"/elasticsearch/data/ -type d | xargs chmod 775; \
