@@ -6,7 +6,7 @@ services:
     deploy:
       placement:
         constraints:
-        - "node.labels.name==node1"
+          - "node.labels.name==node1"
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -34,7 +34,7 @@ services:
       retries: 10
     networks:
       elastic:
-      
+
   es01: &es_service
     depends_on:
       - setup
@@ -210,7 +210,7 @@ services:
       ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certs/ca.crt
       # SSL
-      SERVER_SSL_ENABLED: 'true'
+      SERVER_SSL_ENABLED: "true"
       SERVER_SSL_CERTIFICATE: /usr/share/kibana/config/certs/kibana.crt
       SERVER_SSL_KEY: /usr/share/kibana/config/certs/kibana.key
       XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_ENCRYPTIONKEY}
@@ -218,9 +218,9 @@ services:
       XPACK_SECURITY_SESSION_IDLETIMEOUT: 7d #60m
       # monitoring
       # set to 'false' to disable self monitoring if already monitoring with metricbeat
-      MONITORING_KIBANA_COLLECTION_ENABLED: 'false'
-      MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED: 'true'
-      MONITORING_UI_CONTAINER_LOGSTASH_ENABLED: 'true'
+      MONITORING_KIBANA_COLLECTION_ENABLED: "false"
+      MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED: "true"
+      MONITORING_UI_CONTAINER_LOGSTASH_ENABLED: "true"
       SERVER_PUBLICBASEURL: https://${KIBANA_NODE_IP}:${KIBANA_PORT}
       # disable telemetry (elastic user data collection)
       TELEMETRY_OPTIN: "false"
@@ -230,7 +230,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -s -I http://localhost:5601 | grep -qE 'HTTP/1.1 302 Found|200 OK' || curl --cacert config/certs/ca.crt -s -I https://localhost:5601 | grep -qE 'HTTP/1.1 302 Found|200 OK'"
+          "curl -s -I http://localhost:5601 | grep -qE 'HTTP/1.1 302 Found|200 OK' || curl --cacert config/certs/ca.crt -s -I https://localhost:5601 | grep -qE 'HTTP/1.1 302 Found|200 OK'",
         ]
       interval: 10s
       timeout: 5s
@@ -296,7 +296,7 @@ services:
       path.data: /app/logstash
       #path.logs: /app/logs/logstash
       http.host: 0.0.0.0
-      xpack.monitoring.enabled: 'true'
+      xpack.monitoring.enabled: "true"
       xpack.monitoring.elasticsearch.username: logstash_system
       xpack.monitoring.elasticsearch.password: ${LOGSTASH_SYSTEM_PASSWORD}
       xpack.monitoring.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/certs/ca.crt
@@ -307,10 +307,7 @@ services:
       LOGSTASH_WRITER_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
       ELASTIC_HOSTS: "https://es01:9200 https://es02:9200 https://es03:9200"
     healthcheck:
-      test:
-        [ "CMD-SHELL",
-          "curl -s http://127.0.0.1:9600 | grep -q version",
-        ]
+      test: ["CMD-SHELL", "curl -s http://127.0.0.1:9600 | grep -q version"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -408,11 +405,11 @@ services:
     deploy:
       replicas: ${FILEBEAT_REPLICAS:-3}
       placement:
-          max_replicas_per_node: 1
-          constraints:
-            - "node.role==manager"
+        max_replicas_per_node: 1
+        constraints:
+          - "node.role==manager"
     volumes:
-      - ${ALTERNATIVE_DOCKER_ROOT_DIR:-/var/lib/docker}/containers/:/var/lib/docker/containers/:ro
+      - ${ALTERNATIVE_DOCKER_ROOT_DIR:-/var/lib/docker}/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${DATA_DIR}/filebeat/data:/usr/share/filebeat/data
     secrets:
@@ -444,7 +441,7 @@ services:
           - "node.labels.name==node1"
     configs:
       - source: apm-server.yml
-        target: /ysr/share/apm-server/apm-server.yml
+        target: /usr/share/apm-server/apm-server.yml
         mode: 0644
     secrets:
       - source: ca_crt
@@ -454,7 +451,7 @@ services:
         target: /usr/share/apm-server/config/certs/apm-server.crt
         mode: 0440
       - source: apm_key
-        target: /ysr/share/apm-server/config/certs/apm-server.key
+        target: /usr/share/apm-server/config/certs/apm-server.key
         mode: 0440
     environment:
       ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
@@ -471,7 +468,7 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - elastic   
+      - elastic
 
 configs:
   jvm_options:
@@ -496,10 +493,9 @@ configs:
     file: ./logstash/kafka-jaas.conf
     template_driver: golang
 
-
 secrets:
   ca_crt:
-   file: ./elasticsearch/certs/ca/ca.crt
+    file: ./elasticsearch/certs/ca/ca.crt
   ca_key:
     file: ./elasticsearch/certs/ca/ca.key
   es01_crt:
