@@ -180,7 +180,6 @@ services:
         max_replicas_per_node: 1
         constraints:
           - "node.role==manager"
-          #- "node.labels.name==node1"
       update_config:
         parallelism: 1
         monitor: 60s
@@ -261,7 +260,6 @@ services:
         max_replicas_per_node: 1
         constraints:
           - "node.role==manager"
-        #- "node.labels.name==node1"
       update_config:
         parallelism: 1
         monitor: 60s
@@ -281,10 +279,6 @@ services:
       - source: jvm_options
         target: /usr/share/logstash/config/jvm.options.d/heap_size.options
         mode: 0664
-      # - source: pipelines.yml
-      #   target: /usr/share/logstash/config/pipelines.yml
-      #   mode: 0444
-      #   uid: ${RUN_AS_USER}
     volumes:
       - ./logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
       - ./logstash/conf.d.tmpl:/usr/share/logstash/config/conf.d
@@ -330,15 +324,14 @@ services:
         delay: 20s
     cap_add:
       - dac_read_search
-      ## - sys_ptrace
-      ## - net_admin
+      # - sys_ptrace
+      # - net_admin
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:iro"
       - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
       - "/proc:/hostfs/proc:ro"
       - "/:/hostfs:ro"
       - ${DATA_DIR}/metricbeat/data:/usr/share/metricbeat/data
-      #- ./metrickeat/metrickeat-performance.yml:/usxr/share/metrickeat/metrichbeat.yml: ro
     secrets:
       - source: ca_crt
         target: /usr/share/metricbeat/ca.crt
@@ -398,7 +391,6 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
-    #user: "${RUN_AS_USER}"
     user: root
     hostname: "{{.Node.Hostname}}"
     deploy:
@@ -462,15 +454,17 @@ services:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     ports:
-      - 8200:8200
-    # healthcheck:
-    #   test:
-    #     [ "CMD-SHELL",
-    #       "curl -s http://127.0.0.1:8200 | grep -q version",
-    #     ]
-    #   interval: 30s
-    #   timeout: 5s
-    #   retries: 10
+      - target: 8200
+        published: 8200
+        mode: host
+    healthcheck:
+      test:
+        [ "CMD-SHELL",
+          "curl -s http://127.0.0.1:8200 | grep -q version",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 10
     networks:
       - elastic
 
