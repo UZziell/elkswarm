@@ -5,7 +5,7 @@ apm-server:
     host: "https://kibana:5601"
     ssl.enabled: true
     # ssl.verification_mode: none
-    ssl.certificate_authorities: "/usr/share/apm-server/config/certs/ca.crt
+    ssl.certificate_authorities: "/usr/share/apm-server/config/certs/ca.crt"
     protocol: "https"
     username: "kibana_system"
     password: "{{ env "KIBANA_SYSTEM_PASSWORD" }}"
@@ -16,22 +16,22 @@ output.elasticsearch:
   username: "elastic"
   password: "{{ env "ELASTIC_PASSWORD" }}"
   indices:
-    - index: "apm-7.6.1-sourcemap"
+    - index: "apm-8.13.2-sourcemap"
       when.contains:
         processor.event: "sourcemap"
-    - index: "apm-7.6.1-error-%{+yyyy.MM.dd}"
+    - index: "apm-8.13.2-error-%{+yyyy.MM.dd}"
       when.contains:
         processor.event: "error"
-    - index: "apm-7.6.1-transaction-%{+yyyy.MM.dd}"
+    - index: "apm-8.13.2-transaction-%{+yyyy.MM.dd}"
       when.contains:
         processor.event: "transaction"
-    - index: "apm-7.6.1-span-%{+yyyy.MM.dd}"
+    - index: "apm-8.13.2-span-%{+yyyy.MM.dd}"
       when.contains:
         processor.event: "span"
-    - index: "apm-7.6.1-metric-%{+yyyy.MM.dd}"
+    - index: "apm-8.13.2-metric-%{+yyyy.MM.dd}"
       when.contains:
         processor.event:s "metric"
-    - index: "apm-7.6.1-onboarding-%{+yyyy.MM.dd}"
+    - index: "apm-8.13.2-onboarding-%{+yyyy.MM.dd}"
       when.contains:
         processor.event: "onboarding"
   ssl.enabled: true

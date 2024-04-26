@@ -226,6 +226,8 @@ services:
       TELEMETRY_OPTIN: "false"
       MAP_INCLUDEELASTICMAPSSERVICE: "false"
       NEWSFEED_ENABLED: "false"
+      ELASTIC_APM_ACTIVE: "true"
+      ELASTIC_APM_SERVER_URL: https://apm-server:8200
     healthcheck:
       test:
         [
@@ -434,6 +436,7 @@ services:
 
   apm-server:
     image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
+    user: ${RUN_AS_USER}
     deploy:
       replicas: ${APM_SERVER_REPLICAS:-1}
       placement:
@@ -443,30 +446,34 @@ services:
       - source: apm-server.yml
         target: /usr/share/apm-server/apm-server.yml
         mode: 0644
+        uid: ${RUN_AS_USER}
     secrets:
       - source: ca_crt
         target: /usr/share/apm-server/config/certs/ca.crt
         mode: 0440
+        uid: ${RUN_AS_USER}
       - source: apm_crt
         target: /usr/share/apm-server/config/certs/apm-server.crt
         mode: 0440
+        uid: ${RUN_AS_USER}
       - source: apm_key
         target: /usr/share/apm-server/config/certs/apm-server.key
         mode: 0440
+        uid: ${RUN_AS_USER}
     environment:
       ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     ports:
       - 8200:8200
-    healthcheck:
-      test:
-        [ "CMD-SHELL",
-          "curl -s http://127.0.0.1:8200 | grep -q version",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 10
+    # healthcheck:
+    #   test:
+    #     [ "CMD-SHELL",
+    #       "curl -s http://127.0.0.1:8200 | grep -q version",
+    #     ]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 10
     networks:
       - elastic
 
