@@ -103,6 +103,12 @@ function create_common() {
         "name": "CustomSpace"
     }'
 
+    # enable APM
+    f; curl -s -XPOST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PASSWORD" }}" "https://kibana:5601/api/fleet/epm/packages/apm/{{ env "STACK_VERSION" }}" -H 'Content-Type: application/json' -H 'kbn-xsrf: reporting' -d'
+    {
+        "force": true
+    }'
+
 }
 
 create_common;

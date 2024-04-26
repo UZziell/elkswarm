@@ -27,6 +27,7 @@ services:
       BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD}
       REMOTE_MONITORING_USER_PASSWORD: ${REMOTE_MONITORING_USER_PASSWORD}
       KIBANA_NODE_IP: ${KIBANA_NODE_IP}
+      STACK_VERSION: ${STACK_VERSION}
     healthcheck:
       test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
       interval: 5s
