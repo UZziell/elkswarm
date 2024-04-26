@@ -30,7 +30,7 @@ function create_common() {
     curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PASSWORD" }}" -H "Content-Type: application/json" https://es01:9200/_security/user/logstash_system/_password -d '{"password":"{{ env "LOGSTASH_SYSTEM_PASSWORD" }}"}'
     curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC PASSWORD" }}" -H "Content-Type: application/json" https://es01:9200/_security/user/apm_system/_password -d '{"password":"{{ env "APM_SYSTEM_PASSWORD" }}"}'
     curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC PASSWORD" }}" -H "Content-Type: application/json" https://es01:9200/_security/user/beats_system/_password -d '{"password":"{{ env "BEATS_SYSTEM_PASSWORD" }}"}'
-    curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC PASSWORD" }}" -H "Content-Type: application/json" https://es01:9200/_security/user/remote_monitoringuser/_password -d '{"password":"{{ env "REMOTE_MONITORING_USER_PASSWORD" }}"}'
+    curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC PASSWORD" }}" -H "Content-Type: application/json" https://es01:9200/_security/user/remote_monitoring_user/_password -d '{"password":"{{ env "REMOTE_MONITORING_USER_PASSWORD" }}"}'
 
     # Create logstash_writer role and user
     f; curl -s -XPUT --cacert config/certs/ca/ca.crt -u "elastic:{{ env "ELASTIC_PASSWORD" }}" "https://es01:9200/_security/role/{{ env "LOGSTASH_WRITER_USER" }}" -H 'Content-Type: application/json' -d'

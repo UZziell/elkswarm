@@ -1,7 +1,7 @@
 instances:
   - name: kibana
-    dns: [ kibana , localhost ]
-    ip: [ __KIBANA_NODES_IP__ ]
+    dns: [ kibana , localhost , __KIBANA_HOSTNAMES__ ]
+    ip: [ 127.0.0.1, __KIBANA_NODES_IP__ ]
   - name: es01
     dns: [ es01 , node1 , localhost ]
     ip: [ 127.0.0.1 ]
