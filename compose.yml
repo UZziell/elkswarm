@@ -55,7 +55,6 @@ services:
         mode: host
     volumes:
       - ${DATA_DIR}/elasticsearch/data:/app/elasticsearch/data
-      # - ${DATA_DIR}/logs/elasticsearch:/app/logs/elasticsearch
       - snapshot-nfs:/app/elasticsearch/snapshot
     secrets:
       - source: ca_crt
@@ -188,7 +187,6 @@ services:
         delay: 20s
     volumes:
       - ${DATA_DIR}/kibana/data:/usr/share/kibana/data
-      # - ${DATA_DIR}/logs/kibana:/app/logs/kibana
     secrets:
       - source: ca_crt
         target: /usr/share/kibana/config/certs/ca.crt
@@ -293,11 +291,9 @@ services:
       # fixes permission denied when running as a user other than 1000
       - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:rw
       - ${DATA_DIR}/logstash:/app/logstash
-      # - ${DATA_DIR}/logs/logstash:/app/logs/logstash
     environment:
       node.name: "{{.Node.Hostname}}"
       path.data: /app/logstash
-      #path.logs: /app/logs/logstash
       http.host: 0.0.0.0
       xpack.monitoring.enabled: "true"
       xpack.monitoring.elasticsearch.username: logstash_system
