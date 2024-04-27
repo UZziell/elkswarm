@@ -91,10 +91,10 @@ docker node update --label-add name=node3 HOSTNAME3
 #for FILE in $(1s -1 logstash/conf.d.tmpl); do echo "Substituting $FILE variables."; envsubst < logstash/conf.d.tmpl/$FILE > /tmp/envsubst; mv -f /tmp/envsubst logstash/conf.d/$FILE; done
 
 # generate certificates
-docker compose --env-file .env -f generate-certs-compose.yml up
+docker compose --env-file .env -f generate-certs-compose.yml up --force-recreate
 
 # deploy stack
 docker stack deploy --resolve-image never -c compose.yml elk
 
-# for debug only
-# rm -rf /app/{elasticsearch,logstash,kibana,metricbeat,filebeat}/data/*
+# for debug only - deleting all data
+# rm -rf /${DATA_DIR}/{elasticsearch,logstash,kibana,metricbeat,filebeat}/data/*
