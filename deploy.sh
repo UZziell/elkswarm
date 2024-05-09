@@ -48,16 +48,16 @@ EOF
 for IMAGE in "${ELK_DIR}"/*.tar; do sudo docker image load -i "${IMAGE};"; done
 
 # Create mountpoints
-mkdir -p "${DATA_DIR}"/logs/{elasticsearch,logstash,kibana} "${DATA_DIR}"/{elasticsearch/{data,snapshot},kibana/data,logstash/data,filebeat/data,metricbeat/data} ${ELK_DIR} && \
+mkdir -p "${DATA_DIR}"/logs/{elasticsearch,logstash,kibana} "${DATA_DIR}"/{elasticsearch/{data,snapshot},fleet-server/data,elastic-agent/data,kibana/data,logstash/data,filebeat/data,metricbeat/data} ${ELK_DIR} && \
 chown -R 1000:docker "${ELK_DIR}" "${DATA_DIR}"/{elasticsearch,logstash,logs,kibana,filebeat} && \
 chmod 775 "${DATA_DIR}" && \
 chmod 777 "${DATA_DIR}"/{elasticsearch,kibana,metricbeat,logstash}/data/; \
 chmod 666 "${ELK_DIR}"/logstash/logstash.yml; \
 chmod 744 "${ELK_DIR}"/elasticsearch/elastic_initial_setup_script.sh; \
-find "${DATA_DIR}"/elasticsearch/data/ -type d | xargs chmod 775; \
-find "${DATA_DIR}"/elasticsearch/data/ -type f | xargs chmod 664; \
-find "${ELK_DIR}" -type d | xargs chmod 775; \
-find "${ELK_DIR}" -type f | xargs chmod 664;
+find "${DATA_DIR}"/elasticsearch/data/ -type d -print0| xargs -0 chmod 775; \
+find "${DATA_DIR}"/elasticsearch/data/ -type f -print0| xargs -0 chmod 664; \
+find "${ELK_DIR}" -type d -print0| xargs -0 chmod 775; \
+find "${ELK_DIR}" -type f -print0| xargs -0 chmod 664;
 
 # Tune kernel
 grep -q 'vm.max_map_count=262144' /etc/sysctl.conf || echo 'vm.max_map_count=262144' >> /etc/sysctl.conf && sysctl --load /etc/sysctl.conf;
@@ -77,6 +77,12 @@ docker network create --driver overlay --ingress --subnet=10.33.0.0/16 --gateway
 
 # wrong checksum issue preventing overlay network to work properly
 ethtool -K <interface> tx off
+
+cat <<EOF >/etc/networkd-dispatcher/routable.d/10-disable-offloading
+  #!/bin/sh
+  /usr/sbin/ethtool -K ens160 tx off
+EOF
+chmod +x /etc/networkd-dispatcher/routable.d/10-disable-offloading
 
 # Use join token to add other nodes (both manager and worker)
 docker swarm join-token manager
