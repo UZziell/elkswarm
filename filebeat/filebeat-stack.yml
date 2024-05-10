@@ -35,6 +35,7 @@ filebeat.autodiscover:
                 paths:
                   - /var/lib/docker/containers/${data.docker.container.id}/*.log
                 fields_under_root: true
+                json.ignore_decoding_error: true
 
 output.elasticsearch:
   hosts: {{ env "ELASTIC_HOSTS_LIST" }}
