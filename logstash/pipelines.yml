@@ -1,3 +1,7 @@
 - pipeline.id: hearbeat
-  path.config: "/usr/share/logstash/config/conf.d/heartbeat.conf"
+  path.config: "/usr/share/logstash/config/conf.d/heartbeat-*.conf"
+  pipeline.ecs_compatibility: disabled
+
+- pipeline.id: microservices
+  path.config: "/usr/share/logstash/config/conf.d/microservices-*.conf"
   pipeline.ecs_compatibility: disabled
