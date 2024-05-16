@@ -38,8 +38,8 @@ filebeat.autodiscover:
                 json.ignore_decoding_error: true
 
 output.elasticsearch:
-  hosts: {{ env "ELASTIC_HOSTS_LIST" }}
+  hosts: '${ELASTIC_HOSTS_LIST}'
   protocol: https
-  username: "{{ env "BEATS_SYSTEM_USERNAME" }}"
-  password: "{{ env "BEATS_SYSTEM_PASSWORD" }}"
+  username: '${BEATS_SYSTEM_USERNAME}'
+  password: '${BEATS_SYSTEM_PASSWORD}'
   ssl.certificate_authorities: "/usr/share/filebeat/ca.crt"
