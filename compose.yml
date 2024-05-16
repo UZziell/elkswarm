@@ -1,6 +1,6 @@
 services:
   setup:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     entrypoint: ["./setup_script.sh"]
     user: "0"
     deploy:
@@ -39,7 +39,7 @@ services:
   es01: &es_service
     depends_on:
       - setup
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     user: ${RUN_AS_USER}
     deploy:
       placement:
@@ -171,7 +171,7 @@ services:
       - es01
       - es02
       - es03
-    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/kibana/kibana:${STACK_VERSION}
     user: ${RUN_AS_USER}
     hostname: "kibana{{.Task.Slot}}"
     deploy:
@@ -251,7 +251,7 @@ services:
       - es02
       - es03
       - kibana
-    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
     user: ${RUN_AS_USER}
     hostname: "{{.Node.Hostname}}"
     deploy:
@@ -313,7 +313,7 @@ services:
       - elastic
 
   metricbeat-performance:
-    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/beats/metricbeat:${STACK_VERSION}
     user: ${RUN_AS_USER}
     hostname: "{{.Node.Hostname}}"
     deploy:
@@ -353,7 +353,7 @@ services:
       - elastic
 
   metricbeat-monitoring:
-    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/beats/metricbeat:${STACK_VERSION}
     user: ${RUN_AS_USER}
     hostname: "{{.Node.Hostname}}"
     deploy:
@@ -390,7 +390,7 @@ services:
       - elastic
 
   filebeat:
-    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/beats/filebeat:${STACK_VERSION}
     user: root
     hostname: "{{.Node.Hostname}}"
     deploy:
@@ -424,7 +424,7 @@ services:
       - elastic
 
   apm-server:
-    image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY}docker.elastic.co/apm/apm-server:${STACK_VERSION}
     user: ${RUN_AS_USER}
     deploy:
       replicas: ${APM_SERVER_REPLICAS:-1}
@@ -461,7 +461,7 @@ services:
       - elastic
 
   # fleet-server:
-  #   image: docker.elastic.co/beats/elastic-agent:${STACK_VERSION}
+  #   image: ${IMAGE_REGISTRY}docker.elastic.co/beats/elastic-agent:${STACK_VERSION}
   #   user: root # note, synthetic browser monitors require this set to `elastic-agent`
   #   deploy:
   #     placement:
@@ -518,7 +518,7 @@ services:
   #     - elastic
 
   # fleet-agent:
-  #   image: docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}
+  #   image: ${IMAGE_REGISTRY}docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}
   #   deploy:
   #     placement:
   #       max_replicas_per_node: 1
