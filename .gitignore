@@ -3,3 +3,8 @@ elasticsearch/certs
 *.pem
 **/*tar
 **/*tar.gz
+
+metricbeat/.env
+filebeat/.env
+
+*.jar
