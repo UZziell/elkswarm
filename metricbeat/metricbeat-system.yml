@@ -1,5 +1,6 @@
 metricbeat.modules:
 - module: system
+  enabled: true
   metricsets:
     - cpu
     - load
@@ -7,10 +8,8 @@ metricbeat.modules:
     - network
     - uptime
     - filesystem
-    - diskio
+    # - diskio
     - fsstat
-    #- service
-  enabled: true
   period: 60s
   #processes: ['.*"]
   cpu.metrics: ["percentages", "normalized_percentages"]
@@ -22,18 +21,25 @@ metricbeat.modules:
     - iostat
 
 output.elasticsearch:
-  hosts: {{ env "ELASTIC_HOSTS_LIST" }}
+  enabled: '${OUTPUT_ELASTIC_ENABLED}'
+  hosts: '${ELASTIC_HOSTS_LIST}'
   protocol: https
-  username: "{{ env "BEATS_SYSTEM_USERNAME" }}"
-  password: "{{ env "BEATS_SYSTEM_PASSWORD" }}"
+  username: '${OUTPUT_ELASTIC_USERNAME}'
+  password: '${OUTPUT_ELASTIC_PASSWORD}'
+  ssl.verification_mode: "none"
   ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
-  index: "metricbeat-sysperformance"
+  index: "metricbeat-system"
 
 setup.template:
   #enabled: true
   #overwrite: true
-  name: "metricbeat-sysperformance"
-  pattern: "metricbeat-sysperformance"
+  name: "metricbeat-system"
+  pattern: "metricbeat-system"
+
+output.logstash:
+  enabled: '${OUTPUT_LOGSTASH_ENABLED}'
+  hosts: '${LOGSTASH_HOSTS_LIST}'
+  loadbalance: true
 
 #setup.ilm.enabled: true
 #setup.ilm.overwrite: true
@@ -47,3 +53,8 @@ setup.template:
 ## password:
 ##setup.dashboards.enabled: true
  
+# debug
+# logging.level: debug
+output.console:
+  enabled: '${OUTPUT_CONSOLE_ENABLED}'
+  pretty: true

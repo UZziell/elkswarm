@@ -317,7 +317,7 @@ services:
     networks:
       - elastic
 
-  metricbeat-performance:
+  metricbeat-system:
     image: ${IMAGE_REGISTRY}docker.elastic.co/beats/metricbeat:${STACK_VERSION}
     user: ${RUN_AS_USER}
     hostname: "{{.Node.Hostname}}"
@@ -342,7 +342,7 @@ services:
         target: /usr/share/metricbeat/ca.crt
         mode: 0444
     configs:
-      - source: metricbeat-performance.yml
+      - source: metricbeat-system.yml
         target: /usr/share/metricbeat/metricbeat.yml
         mode: 0444
     environment:
@@ -562,8 +562,8 @@ configs:
   jvm_options:
     file: ./elasticsearch/jvm.options.tmpl
     template_driver: golang
-  metricbeat-performance.yml:
-    file: ./metricbeat/metricbeat-performance.yml
+  metricbeat-system.yml:
+    file: ./metricbeat/metricbeat-system.yml
     template_driver: golang
   metricbeat-monitoring.yml:
     file: ./metricbeat/metricbeat-monitoring.yml
