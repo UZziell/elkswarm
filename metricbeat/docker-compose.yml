@@ -3,7 +3,7 @@ services:
     image: ${IMAGE_REGISTRY}docker.elastic.co/beats/metricbeat:8.13.2
     command: ['-environment=container', '-strict.perms=false']
     user: root
-    hostname: "mdxapp"
+    hostname: "mdxmdxapp-192-168-6-10"
     cap_add:
       - dac_read_search
       - net_admin
@@ -15,16 +15,17 @@ services:
       - /:/hostfs:ro
       - metricbeat-data:/usr/share/metricbeat/data
       - ./metricbeat-system.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - ./ca.crt:/usr/share/metricbeat/ca.crt
     environment:
       # output.elasticsearch
-      OUTPUT_ELASTIC_ENABLED: 'false'
+      OUTPUT_ELASTIC_ENABLED: 'true'
       ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
       BEATS_SYSTEM_USERNAME: ${LOGSTASH_WRITER_USER}
       BEATS_SYSTEM_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
       # Load metricbeat-[VERSION] index template or not. If set to true, OUTPUT_ELASTIC_ENABLED should also be set to true
       SETUP_TEMPLATE_ENABLED: 'true'
       # output.logstash
-      OUTPUT_LOGSTASH_ENABLED: 'true'
+      OUTPUT_LOGSTASH_ENABLED: 'false'
       LOGSTASH_HOSTS_LIST: ${LOGSTASH_HOSTS_LIST}
 
       # console output for debugging

@@ -144,9 +144,9 @@ output.elasticsearch:
   protocol: https
   username: '${BEATS_SYSTEM_USERNAME}'
   password: '${BEATS_SYSTEM_PASSWORD}'
-  ssl.verification_mode: "none"
-  # ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
-  index: log
+  #ssl.verification_mode: "none"
+  ssl.certificate_authorities: "/usr/share/filebeat/ca.crt"
+  # index: log
 
 setup.template:
   enabled: '${SETUP_TEMPLATE_ENABLED}'
