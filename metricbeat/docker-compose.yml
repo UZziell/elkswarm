@@ -19,14 +19,14 @@ services:
       - ./ca.crt:/usr/share/metricbeat/ca.crt
     environment:
       # output.elasticsearch
-      OUTPUT_ELASTIC_ENABLED: 'true'
+      OUTPUT_ELASTIC_ENABLED: 'false'
       ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
       BEATS_SYSTEM_USERNAME: ${LOGSTASH_WRITER_USER}
       BEATS_SYSTEM_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
       # Load metricbeat-[VERSION] index template or not. If set to true, OUTPUT_ELASTIC_ENABLED should also be set to true
       SETUP_TEMPLATE_ENABLED: 'true'
       # output.logstash
-      OUTPUT_LOGSTASH_ENABLED: 'false'
+      OUTPUT_LOGSTASH_ENABLED: 'true'
       LOGSTASH_HOSTS_LIST: ${LOGSTASH_HOSTS_LIST}
 
       # console output for debugging
