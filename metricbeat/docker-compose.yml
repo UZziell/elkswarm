@@ -3,7 +3,8 @@ services:
     image: ${IMAGE_REGISTRY}docker.elastic.co/beats/metricbeat:8.13.2
     command: ['-environment=container', '-strict.perms=false']
     user: root
-    hostname: "mdxmdxapp-192-168-6-10"
+    # hostname: "hostA"
+    network_mode: host
     cap_add:
       - dac_read_search
       - net_admin
