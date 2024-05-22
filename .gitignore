@@ -1,6 +1,8 @@
 logstash/conf.d
 elasticsearch/certs
 **/*.pem
+**/*.crt
+**/*.key
 **/*tar
 **/*tar.gz
 
