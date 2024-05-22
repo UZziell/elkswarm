@@ -15,8 +15,8 @@ services:
       # output.elasticsearch
       OUTPUT_ELASTIC_ENABLED: 'false'
       ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
-      OUTPUT_ELASTIC_USERNAME: ${LOGSTASH_WRITER_USER}
-      OUTPUT_ELASTIC_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+      BEATS_SYSTEM_USERNAME: ${LOGSTASH_WRITER_USER}
+      BEATS_SYSTEM_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
       # Load metricbeat-[VERSION] index template or not. If set to true, OUTPUT_ELASTIC_ENABLED should also be set to true
       SETUP_TEMPLATE_ENABLED: 'true'
       # output.logstash

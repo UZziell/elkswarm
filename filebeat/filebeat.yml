@@ -142,8 +142,8 @@ output.elasticsearch:
   enabled: '${OUTPUT_ELASTIC_ENABLED}'
   hosts: '${ELASTIC_HOSTS_LIST}'
   protocol: https
-  username: '${OUTPUT_ELASTIC_USERNAME}'
-  password: '${OUTPUT_ELASTIC_PASSWORD}'
+  username: '${BEATS_SYSTEM_USERNAME}'
+  password: '${BEATS_SYSTEM_PASSWORD}'
   ssl.verification_mode: "none"
   # ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
   index: log
