@@ -10,7 +10,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - filebeat-data:/usr/share/filebeat/data
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./ca.crt:/usr/share/metricbeat/ca.crt
+      - ./ca.crt:/usr/share/filebeat/ca.crt
     environment:
       ADD_TAGS_LIST: '[prod,backend,microservice]'
       # output.elasticsearch
