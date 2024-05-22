@@ -8,7 +8,7 @@ metricbeat.modules:
     - network
     - uptime
     - filesystem
-    # - diskio
+    # - diskio # depricated
     - fsstat
   period: 60s
   #processes: ['.*"]
@@ -58,3 +58,6 @@ output.logstash:
 output.console:
   enabled: '${OUTPUT_CONSOLE_ENABLED}'
   pretty: true
+
+# disable metrics logging
+logging.metrics.enabled: false

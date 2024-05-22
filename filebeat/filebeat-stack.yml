@@ -43,3 +43,6 @@ output.elasticsearch:
   username: '${BEATS_SYSTEM_USERNAME}'
   password: '${BEATS_SYSTEM_PASSWORD}'
   ssl.certificate_authorities: "/usr/share/filebeat/ca.crt"
+
+# disable metrics logging
+logging.metrics.enabled: false
