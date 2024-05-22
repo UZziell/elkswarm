@@ -1,0 +1,35 @@
+services:
+  filebeat:
+    image: ${IMAGE_REGISTRY}docker.elastic.co/beats/filebeat:8.13.2
+    user: root
+    hostname: "mdxapp-6.10"
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat-data:/usr/share/filebeat/data
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    environment:
+      ADD_TAGS_LIST: '[prod,backend,microservice]'
+      # output.elasticsearch
+      OUTPUT_ELASTIC_ENABLED: 'false'
+      ELASTIC_HOSTS_LIST: ${ELASTIC_HOSTS_LIST}
+      OUTPUT_ELASTIC_USERNAME: ${LOGSTASH_WRITER_USER}
+      OUTPUT_ELASTIC_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
+      # Load metricbeat-[VERSION] index template or not. If set to true, OUTPUT_ELASTIC_ENABLED should also be set to true
+      SETUP_TEMPLATE_ENABLED: 'true'
+      # output.logstash
+      OUTPUT_LOGSTASH_ENABLED: 'true'
+      LOGSTASH_HOSTS_LIST: ${LOGSTASH_HOSTS_LIST}
+
+      # console output for debugging
+      OUTPUT_CONSOLE_ENABLED: 'false'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "2"
+
+volumes:
+  filebeat-data:

@@ -1,0 +1,161 @@
+modules:
+  enabled: true
+  path: modules.d/*.yml
+  reload.enabled: true
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            # contains:
+            #   docker.container.image: ms-gateway
+            regexp:
+              docker.container.image: '.*(ms-).*'
+          config:
+            - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+              multiline:
+                type: pattern
+                pattern: '^[[:space:]]+(at|\.{3})[[:space:]]+|^Caused by:'
+                negate: false
+                match: after
+        - condition:
+            regexp:
+              docker.container.image: '.*(nginx|-console).*'
+          config:
+            - module: nginx
+              access.input:
+                type: container
+                stream: stdout
+                paths:
+                  - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              error.input:
+                type: container
+                stream: stderr
+                paths:
+                  - /var/lib/docker/containers/${data.docker.container.id}/*.log
+
+# parsers:
+# - multiline:
+#     type: pattern
+#     pattern: '^[[:space:]]+(at|\.{3})[[:space:]]+|^Caused by:'
+#     negate: false
+#     match: after
+# - multiline:
+#     type: pattern
+#     pattern: '^\['
+#     negate: true
+#     match: after
+
+processors:
+  - add_host_metadata:
+      cache.ttl: 10m
+
+  - add_fields:
+      target: ''
+      fields:
+        log_level: INFO
+      when:
+        regexp:
+          message: "(^INFO|LEVEL:Info)"
+
+  - copy_fields:
+      fields:
+        - from: container.name
+          to: '@metadata.target_index'
+      fail_on_error: false
+      ignore_missing: true
+
+  - add_tags:
+      tags: ${ADD_TAGS_LIST}
+      target: "environment"
+
+  # - replace:
+  #     fields:
+  #       - field: "container.image.name.*/"
+  #         pattern: "gitlab"
+  #         replacement: ""
+  #     ignore_missing: true
+  #     fail_on_error: false
+  
+  # - decode_json_fields:
+  #     fields: ["message"]
+  #     target: "json"
+  #     overwrite_keys: true
+
+  - drop_fields:
+      fields:
+        - docker.container.labels.architecture
+        - docker.container.labels.build-date
+        - docker.container.labels.com_docker_compose_config-hash
+        - docker.container.labels.com_docker_compose_container-number
+        - docker.container.labels.com_docker_compose_oneoff
+        - docker.container.labels.com_docker_compose_project
+        - docker.container.labels.com_docker_compose_project_config_files
+        - docker.container.labels.com_docker_compose_project_working_dir
+        - docker.container.labels.com_docker_compose_service
+        - docker.container.labels.com_docker_compose_version
+        - docker.container.labels.com_redhat_build-host
+        - docker.container.labels.com_redhat_component
+        - docker.container.labels.com_redhat_license_terms
+        - docker.container.labels.description
+        - docker.container.labels.distribution-scope
+        - docker.container.labels.io_confluent_docker
+        - docker.container.labels.io_confluent_docker_build_number
+        - docker.container.labels.io_confluent_docker_git_id
+        - docker.container.labels.io_confluent_docker_git_repo
+        - docker.container.labels.io_k8s_description
+        - docker.container.labels.io_k8s_display-name
+        - docker.container.labels.io_openshift_expose-services
+        - docker.container.labels.io_openshift_tags
+        - docker.container.labels.maintainer
+        - docker.container.labels.name
+        - docker.container.labels.release
+        - docker.container.labels.summary
+        - docker.container.labels.url
+        - docker.container.labels.vcs-ref
+        - docker.container.labels.vcs-type
+        - docker.container.labels.vendor
+        - docker.container.labels.version
+        - kubernetes.container.image
+        - docker.container.labels.com_docker_compose_depends_on
+        - docker.container.labels.com_docker_compose_project_environment_file
+        - docker.container.labels.com_docker_compose_replace
+        - host.mac
+
+  # - script:
+  #   lang: javascript
+  #   source: >
+  #     function process(event) {
+  #     event.Put("@metadata.raw_index", "log");
+  #     }
+
+output.logstash:
+  enabled: '${OUTPUT_LOGSTASH_ENABLED}'
+  hosts: '${LOGSTASH_HOSTS_LIST}'
+  loadbalance: true
+
+output.elasticsearch:
+  enabled: '${OUTPUT_ELASTIC_ENABLED}'
+  hosts: '${ELASTIC_HOSTS_LIST}'
+  protocol: https
+  username: '${OUTPUT_ELASTIC_USERNAME}'
+  password: '${OUTPUT_ELASTIC_PASSWORD}'
+  ssl.verification_mode: "none"
+  # ssl.certificate_authorities: "/usr/share/metricbeat/ca.crt"
+  index: log
+
+setup.template:
+  enabled: '${SETUP_TEMPLATE_ENABLED}'
+  name: 'ms'
+  pattern: 'ms-*'
+
+output.console:
+  enabled: '${OUTPUT_CONSOLE_ENABLED}'
+  pretty: true
+
+# disable metrics logging
+logging.metrics.enabled: false
