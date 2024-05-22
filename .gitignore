@@ -1,10 +1,10 @@
 logstash/conf.d
 elasticsearch/certs
-*.pem
+**/*.pem
 **/*tar
 **/*tar.gz
 
 metricbeat/.env
 filebeat/.env
 
-*.jar
+**/*.jar
