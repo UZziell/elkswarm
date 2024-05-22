@@ -5,3 +5,7 @@
 - pipeline.id: microservices
   path.config: "/usr/share/logstash/config/conf.d/microservices-*.conf"
   pipeline.ecs_compatibility: disabled
+
+- pipeline.id: beats
+  path.config: "/usr/share/logstash/config/conf.d/beats-*.conf"
+  pipeline.ecs_compatibility: disabled
