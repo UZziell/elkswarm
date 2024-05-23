@@ -20,6 +20,36 @@ metricbeat.modules:
   metricsets:
     - iostat
 
+processors:
+  - add_host_metadata:
+      cache.ttl: 20m
+  - drop_fields:
+      fields:
+        - host.mac
+        - host.os
+  - extract_array:
+      field: host.ip
+      mappings:
+        host.ip: 0
+      omit_empty: true
+      overwrite_keys: true
+
+  # - script:
+  #     lang: javascript
+  #     source: >
+  #       function process(event) {
+  #           var message = event.Get("host.ip")
+  #           event.Put("len",message.length)
+  #           for (var i=0; i<message.length; i++)
+  #           {
+  #               if (message[i].indexOf("192.") > -1)
+  #               {
+  #                   event.Put("host.ip",message[i])
+  #                   break;
+  #               }
+  #           }
+  #       }
+
 output.elasticsearch:
   enabled: '${OUTPUT_ELASTIC_ENABLED}'
   hosts: '${ELASTIC_HOSTS_LIST}'
