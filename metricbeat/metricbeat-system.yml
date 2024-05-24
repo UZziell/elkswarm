@@ -15,6 +15,9 @@ metricbeat.modules:
   cpu.metrics: ["percentages", "normalized_percentages"]
   core.metrics: ["percentages"]
   filesystem.ignore_types: [nsfs, sysfs, tmpfs, bdev, proc, cgroup, cgroup2, cpuset, devtmpfs, configfs, debugfs, tracefs, securityfs, sockfs, bpf, pipefs, ramfs, hugetlbfs, devpts, ecryptfs, fuse, fusectl, mqueue, pstore, autofs, binfmt_misc, overlay, autofs, aufs]
+  processors:
+    - drop_event.when.regexp:
+        system.filesystem.mount_point: '^/(hostfs/)?(sys|proc|dev|snap|boot|run)/?'
 
 - module: linux
   metricsets:
