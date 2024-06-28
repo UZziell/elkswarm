@@ -1,16 +1,5 @@
-# ELK
-.PHONY: docker linux-pakcages build run
+# MANUAL: set envs in .env file
 
-# Install docker
-docker:
-    @rpm -ivh docker*/*.rpm
-    @systemctl enable --now docker
-
-# Install linux packages
-linux-packages:
-    @rpm -ivh {htop*,nettools*,telnet*}.rpm
-
-# set envs in .env file ********************************
 # export vars
 while IFS= read -r variable; do export "${variable?}"; done < <(grep -vE '^#|^$' .env)
 
@@ -36,7 +25,7 @@ else
     echo "ERROR - /etc/docker/daemon.json exists and cannot be overwriten!"
 fi
 
-# Setup NFS on the third master server manually************************
+# MANUAL: Setup NFS on the third master server
 ## 1. Install nfs-kernel-server packages
 ## 2. add master nodes IPs to to exports file
 cat <<EOF >> /etc/exports && systemctl restart nfs-server
