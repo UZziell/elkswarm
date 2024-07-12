@@ -1,6 +1,6 @@
 services:
   filebeat:
-    image: ${IMAGE_REGISTRY}docker.elastic.co/beats/filebeat:8.13.2
+    image: ${IMAGE_REGISTRY_PREFIX}docker.elastic.co/beats/filebeat:8.13.2
     user: root
     # hostname: "hostB"
     network_mode: host

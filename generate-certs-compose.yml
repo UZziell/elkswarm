@@ -1,6 +1,6 @@
 services:
   setup:
-    image: ${IMAGE_REGISTRY}docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    image: ${IMAGE_REGISTRY_PREFIX}docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - ./elasticsearch/certs:/usr/share/elasticsearch/config/certs
       - ./elasticsearch/instances.yml.tmpl:/usr/share/elasticsearch/config/instances.yml.tmpl:ro
