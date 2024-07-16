@@ -26,7 +26,6 @@ services:
       APM_SYSTEM_PASSWORD: ${APM_SYSTEM_PASSWORD}
       BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD}
       REMOTE_MONITORING_USER_PASSWORD: ${REMOTE_MONITORING_USER_PASSWORD}
-      KIBANA_NODE_IP: ${KIBANA_NODE_IP}
       STACK_VERSION: ${STACK_VERSION}
     healthcheck:
       test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
@@ -213,13 +212,13 @@ services:
       SERVER_SSL_KEY: /usr/share/kibana/config/certs/kibana.key
       XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_ENCRYPTIONKEY}
       XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY}
-      XPACK_SECURITY_SESSION_IDLETIMEOUT: 7d #60m
+      XPACK_SECURITY_SESSION_IDLETIMEOUT: 60m
       # monitoring
       # set to 'false' to disable self monitoring if already monitoring with metricbeat
       MONITORING_KIBANA_COLLECTION_ENABLED: "false"
       MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED: "true"
       MONITORING_UI_CONTAINER_LOGSTASH_ENABLED: "true"
-      SERVER_PUBLICBASEURL: https://${KIBANA_NODE_IP}:${KIBANA_PORT}
+      SERVER_PUBLICBASEURL: "${KIBANA_SERVER_PUBLICBASEURL}"
       # disable telemetry (elastic user data collection)
       TELEMETRY_OPTIN: "false"
       MAP_INCLUDEELASTICMAPSSERVICE: "false"
@@ -255,7 +254,7 @@ services:
     user: ${RUN_AS_USER}
     hostname: "{{.Node.Hostname}}"
     deploy:
-      replicas: ${LOGSTASH_REPLICAS:-3}
+      replicas: ${LOGSTASH_REPLICAS:-2}
       placement:
         max_replicas_per_node: 1
         constraints:
@@ -439,7 +438,7 @@ services:
       replicas: ${APM_SERVER_REPLICAS:-1}
       placement:
         constraints:
-          - "node.labels.name==node1"
+          - "node.labels.name==node3"
     configs:
       - source: apm-server.yml
         target: /usr/share/apm-server/apm-server.yml
