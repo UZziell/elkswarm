@@ -6,7 +6,7 @@ services:
       - ./elasticsearch/instances.yml.tmpl:/usr/share/elasticsearch/config/instances.yml.tmpl:ro
     user: "0"
     environment:
-      KIBANA_NODES_IP_LIST: ${KIBANA_NODES_IP_LIST}
+      KIBANA_HOSTS_IP: ${KIBANA_HOSTS_IP}
       KIBANA_HOSTNAMES: ${KIBANA_HOSTNAMES}
     command: >
       bash -c
@@ -18,7 +18,7 @@ services:
         fi;
         if [ ! -f config/certs/certs.zip ]; then
           echo \"Creating certs\";
-          cp config/instances.yml.tmpl config/instances.yml && sed -i -e \"s/__KIBANA_NODES_IP__/$${KIBANA_NODES_IP_LIST}/\" -e \"s/__KIBANA_HOSTNAMES__/$${KIBANA_HOSTNAMES}/\" config/instances.yml;
+          cp config/instances.yml.tmpl config/instances.yml && sed -i -e \"s/__KIBANA_HOSTS_IP__/$${KIBANA_HOSTS_IP}/\" -e \"s/__KIBANA_HOSTNAMES__/$${KIBANA_HOSTNAMES}/\" config/instances.yml;
           bin/elasticsearch-certutil cert --days 3650 --silent --pem --out config/certs/certs.zip --in config/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
           unzip -n config/certs/certs.zip -d config/certs;
           
