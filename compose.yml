@@ -629,4 +629,4 @@ volumes:
     driver_opts:
       type: "nfs"
       o: "addr=${NFS_SERVER_IP},nfsvers=4,nolock,hard,rw"
-      device: ":${DATA_DIR}/elasticsearch/snapshot"
+      device: ":${NFS_SERVER_DEVICE_PATH}"
