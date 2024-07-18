@@ -37,8 +37,8 @@ EOF
 for IMAGE in "${ELK_DIR}"/*.tar; do sudo docker image load -i "${IMAGE};"; done
 
 # Create mountpoints
-mkdir -p "${DATA_DIR}"/logs/{elasticsearch,logstash,kibana} "${DATA_DIR}"/{elasticsearch/{data,snapshot},fleet-server/data,elastic-agent/data,kibana/data,logstash/data,filebeat/data,metricbeat/data} ${ELK_DIR} && \
-chown -R 1000:docker "${ELK_DIR}" "${DATA_DIR}"/{elasticsearch,logstash,logs,kibana,filebeat} && \
+mkdir -p "${DATA_DIR}"/{elasticsearch/{data,snapshot},fleet-server/data,elastic-agent/data,kibana/data,logstash/data,filebeat/data,metricbeat/data} ${ELK_DIR} && \
+chown -R "${RUN_AS_USER}:docker" "${ELK_DIR}" "${DATA_DIR}"/{elasticsearch,logstash,kibana,filebeat} && \
 chmod 775 "${DATA_DIR}" && \
 chmod 777 "${DATA_DIR}"/{elasticsearch,kibana,metricbeat,logstash}/data/; \
 chmod 666 "${ELK_DIR}"/logstash/logstash.yml; \
