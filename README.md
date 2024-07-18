@@ -84,15 +84,9 @@ To run this project, you will need to add the following environment variables to
     mkdir -p "${DATA_DIR}"/{elasticsearch/{data,snapshot},fleet-server/data,elastic-agent/data,kibana/data,logstash/data,filebeat/data,metricbeat/data} ${ELK_DIR} && \
     chown -R "${RUN_AS_USER}:docker" "${ELK_DIR}" "${DATA_DIR}"/{elasticsearch,logstash,kibana,filebeat} && \
     chmod 775 "${DATA_DIR}" && \
-    chmod 777 "${DATA_DIR}"/{elasticsearch,kibana,metricbeat,logstash}/data/; \
-    chmod 666 "${ELK_DIR}"/logstash/logstash.yml; \
-    chmod 744 "${ELK_DIR}"/elasticsearch/elastic_initial_setup_script.sh; \
-    find "${DATA_DIR}"/elasticsearch/data/ -type d -print0| xargs -0 chmod 775; \
-    find "${DATA_DIR}"/elasticsearch/data/ -type f -print0| xargs -0 chmod 664; \
-    find "${ELK_DIR}" -type d -print0| xargs -0 chmod 775; \
-    find "${ELK_DIR}" -type f -print0| xargs -0 chmod 664;
+    chmod 777 "${DATA_DIR}"/{elasticsearch,kibana,metricbeat,logstash}/data/;
     ```
-4. **(Optinal)** In case of using [shared file system repository](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshots-filesystem-repository.html) for snapshots, setup the NFS server and ensure all client nodes can successfully connect and mount the share filesystem. Then uncomment the `snapshot-nfs` from both `volumes` and `es01` section of the `compose.yml` file. **Ensure to set this options for the nfs to work with docker volumes correctly `(rw,sync,no_subtree_check,no_root_squash)`**
+4. **(Optinal)** In case of using [shared file system repository](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshots-filesystem-repository.html) for snapshots, setup the NFS server and ensure all client nodes can successfully connect and mount the share filesystem. Then uncomment the `snapshot-nfs` from both `volumes` and `es01` section of the `compose.yml` file. **Ensure to set this options for the nfs to work with docker volumes correctly: `(rw,sync,no_subtree_check,no_root_squash)`**
 
 5. Update kernel parameters on nodes running Elasticsearch container:
     ```sh
@@ -111,11 +105,10 @@ To run this project, you will need to add the following environment variables to
 
 7. Deploy ELK to swarm as a stack named **elk**:
     ```sh
-    docker stack deploy -c $(pwd)/compose.yml elk
+    docker stack deploy --resolve-image never -c compose.yml elk
     ```
 
-
-> **Note:** You may want to remove the stdout output using the `rubydebug` codec after confirming everything works as you expect. By leaving the stdout output enabled it would be too much output for most environments. Also you would want to increase the Elasticsearch heap size and memory/limits reservations for most deployments.
-
-Access kibana at `http://<worker-node-ip>:5601`
-
+8. See the status of the deployment
+    ```sh
+    docker stack ps --no-trunc elk
+    ```
