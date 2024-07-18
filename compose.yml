@@ -266,7 +266,7 @@ services:
     user: ${RUN_AS_USER}
     hostname: "{{.Node.Hostname}}"
     deploy:
-      replicas: ${LOGSTASH_REPLICAS:-2}
+      replicas: ${LOGSTASH_REPLICAS:-3}
       placement:
         max_replicas_per_node: 1
         constraints:
