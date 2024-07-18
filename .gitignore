@@ -1,3 +1,4 @@
+.trunk
 logstash/conf.d
 elasticsearch/certs
 **/*.pem
