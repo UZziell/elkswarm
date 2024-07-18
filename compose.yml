@@ -1,3 +1,15 @@
+networks:
+  elastic:
+    driver: overlay
+    attachable: true
+
+# volumes:
+#   snapshot-nfs:
+#     driver_opts:
+#       type: "nfs"
+#       o: "addr=${NFS_SERVER_IP},nfsvers=4,nolock,hard,rw"
+#       device: ":${NFS_SERVER_DEVICE_PATH}"
+
 services:
   setup:
     image: ${IMAGE_REGISTRY_PREFIX}docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
@@ -54,7 +66,7 @@ services:
         mode: host
     volumes:
       - ${DATA_DIR}/elasticsearch/data:/app/elasticsearch/data
-      - snapshot-nfs:/app/elasticsearch/snapshot
+      # - snapshot-nfs:/app/elasticsearch/snapshot
     secrets:
       - source: ca_crt
         target: /usr/share/elasticsearch/config/certs/ca.crt
@@ -617,15 +629,3 @@ secrets:
     file: ./elasticsearch/certs/fleet-server/fleet-server.crt
   fleet-server_key:
     file: ./elasticsearch/certs/fleet-server/fleet-server.key
-
-networks:
-  elastic:
-    driver: overlay
-    attachable: true
-
-volumes:
-  snapshot-nfs:
-    driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER_IP},nfsvers=4,nolock,hard,rw"
-      device: ":${NFS_SERVER_DEVICE_PATH}"
